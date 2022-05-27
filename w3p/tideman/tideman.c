@@ -33,6 +33,7 @@ void add_pairs(void);
 void sort_pairs(void);
 void lock_pairs(void);
 void print_winner(void);
+bool circle_check(int assumed_winner, int start_loser_point);
 
 int main(int argc, string argv[])
 {
@@ -117,12 +118,14 @@ void record_preferences(int ranks[])
 {
     // TODO
     int voted;
+    int beated;
     for (int i = 0; i < candidate_count - 1; i++)
     {
         voted = ranks[i];
         for (int j = i + 1; j < candidate_count; j++)
         {
-            preferences[voted][j]++;
+            beated = ranks[j];
+            preferences[voted][beated]++;
         }
     }
     return;
@@ -158,14 +161,18 @@ void sort_pairs(void)
 {
     // TODO
     int victory[pair_count];
+    int prewin;
+    int prelos;
     for (int i = 0; i < pair_count; i++)
     {
-        victory[i] = preferences[pairs[i].winner][pairs[i].loser] - preferences[pairs[i].loser][pairs[i].winner];
+        prewin = preferences[pairs[i].winner][pairs[i].loser];
+        prelos = preferences[pairs[i].loser][pairs[i].winner];
+        victory[i] = prewin - prelos;
     }
 
     int midnum;
     pair midpair;
-    for (int i = 0; i < pair_count - 1; i++)
+    for (int i = 0; i < pair_count; i++)
     {
         for (int j = i + 1; j < pair_count; j++)
         {
@@ -175,7 +182,7 @@ void sort_pairs(void)
                 midpair = pairs[i];
 
                 victory[i] = victory[j];
-                pairs[i] = midpair;
+                pairs[i] = pairs[j];
 
                 victory[j] = midnum;
                 pairs[j] = midpair;
@@ -188,26 +195,19 @@ void sort_pairs(void)
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void)
 {
-    // unfinished
     // TODO
     int w;
     int l;
-    bool can_lock;
-    int j;
+    bool circle;
     for (int i = 0; i < pair_count; i++)
     {
         w = pairs[i].winner;
         l = pairs[i].loser;
-        can_lock = false;
-        j = 0;
-        while (j < candidate_count)
+        circle = circle_check(w, l);
+        if (!circle)
         {
-            if (j != l)
-            {
-                r
-            }
+            locked[w][l] = true;
         }
-        locked[pairs[i].winner][pairs[i].loser] = true;
     }
     return;
 }
@@ -216,29 +216,40 @@ void lock_pairs(void)
 void print_winner(void)
 {
     // TODO
-    return;
-}
-
-bool check_circle(int former, int latter)
-{
-    // unfinished
-    int i = 0;
-    while (i < candidate_count)
+    for (int i = 0; i < candidate_count; i++)
     {
-        if (i != latter)
+        for (int j = 0; j < candidate_count; j++)
         {
-            if (locked[latter][i])
+            if (locked[j][i])
             {
-                return check_circle(latter, i)
+                break;
+            }
+            else if (j == candidate_count - 1)
+            {
+                printf("%s\n", candidates[i]);
             }
         }
     }
-    if ()
-    {
-        a
-    }
-    else
+    return;
+}
+
+bool circle_check(int assumed_winner, int start_loser_point)
+{
+    // if add the argumentd pair will cause a circle
+    // return true
+    if (assumed_winner == start_loser_point)
     {
         return true;
     }
+    else
+    {
+        for (int i = 0; i < candidate_count; i++)
+        {
+            if (locked[i][assumed_winner])
+            {
+                return circle_check(i, start_loser_point);
+            }
+        }
+    }
+    return false;
 }
